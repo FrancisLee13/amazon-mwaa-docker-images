@@ -17,6 +17,7 @@ REQUIRED_PACKAGES=(
     watchtower
     fluent-logger
     virtualenv
+    py-spy
 )
 
 # safe-pip-install always install all required packages, along with whatever

@@ -19,6 +19,7 @@ REQUIRED_PACKAGES=(
     fluent-logger
     virtualenv
     apache-airflow-providers-standard
+    py-spy
 )
 
 # safe-pip-install always install all required packages, along with whatever

@@ -298,6 +298,7 @@ class SignalType(Enum):
     KILL = "kill"
     TERMINATION = "termination"
     RESUME = "resume"
+    PROFILE = "profile"
 
     @classmethod
     def from_string(cls, type_string: str) -> 'SignalType':
@@ -526,7 +527,7 @@ class WorkerTaskMonitor:
 
         :return: Number of current tasks marked for cleanup.
         """
-        return len(_get_celery_tasks(self.cleanup_celery_state))
+        return _get_celery_tasks(self.cleanup_celery_state)
 
 
     def _get_next_unprocessed_signal(self) -> tuple[str | None, SignalData | None]:
@@ -620,6 +621,31 @@ class WorkerTaskMonitor:
                 else:
                     logger.warning("Received resume signal but older than the last termination/resume signal. Ignoring.")
                     signal_ignored = 1
+            case SignalType.PROFILE:
+                logger.info("Received profile signal, running py-spy dump...")
+                try:
+                    import subprocess as sp
+                    worker_pid = None
+                    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+                        cmdline = proc.info.get("cmdline") or []
+                        name = proc.info.get("name") or ""
+                        logger.info(f"name is {name}, cmdline is {cmdline}")
+                        cmdline_str = " ".join(cmdline)
+                        if ("celery" in cmdline_str or "celery" in name) and "MainProcess" in cmdline_str:
+                            worker_pid = proc.info["pid"]
+                            break
+                    if not worker_pid:
+                        logger.error("Could not find celery worker process for py-spy dump")
+                    else:
+                        result = sp.run(
+                            ["sudo", "/usr/local/airflow/.local/bin/py-spy", "dump", "--subprocesses", "--pid", str(worker_pid)],
+                            capture_output=True, text=True, timeout=30
+                        )
+                        logger.info(f"py-spy dump output:\n{result.stdout}")
+                        if result.stderr:
+                            logger.warning(f"py-spy dump stderr:\n{result.stderr}")
+                except Exception as e:
+                    logger.error(f"Failed to run py-spy dump: {e}")
             case _:
                 logger.warning(f"Unknown signal type {signal_type}, ignoring.")
                 signal_ignored = 1

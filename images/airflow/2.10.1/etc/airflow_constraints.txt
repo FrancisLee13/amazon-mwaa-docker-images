@@ -550,6 +550,7 @@ ptyprocess==0.7.0
 pure-sasl==0.6.2
 pure_eval==0.2.3
 py-partiql-parser==0.5.5
+py-spy==0.4.1
 py4j==0.10.9.7
 pyOpenSSL==24.2.1
 pyarrow-hotfix==0.6

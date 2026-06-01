@@ -4,6 +4,8 @@ FROM public.ecr.aws/amazonlinux/amazonlinux:2023
 
 ENV AIRFLOW_VERSION=2.10.3
 
+RUN echo "=== Building Airflow image version: 2.10.3 CodeCommitTime: 202605291430 ==="
+
 ENV AIRFLOW_USER_HOME=/usr/local/airflow
 ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
 ENV MWAA_HOME=/usr/local/mwaa

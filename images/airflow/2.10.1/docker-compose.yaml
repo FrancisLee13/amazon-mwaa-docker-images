@@ -147,6 +147,8 @@ services:
     <<: *airflow-common
     command: worker
     container_name: mwaa-2101-worker
+    cap_add:
+      - SYS_PTRACE
     depends_on:
       migratedb:
         condition: service_completed_successfully
